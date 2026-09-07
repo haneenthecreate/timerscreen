@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIH Admin Controller</title>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; padding: 20px; background: #111827; color: white; max-width: 500px; margin: 0 auto; }
+    h2 { border-bottom: 2px solid #374151; padding-bottom: 10px; margin-bottom: 20px; }
+    h3 { margin-top: 20px; color: #9ca3af; font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; }
+    input, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; font-size: 1rem; border: 1px solid #374151; box-sizing: border-box; }
+    input { background: #1f2937; color: white; }
+    button { background: #10b981; color: white; border: none; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+    button:active { transform: scale(0.98); }
+    .btn-clear { background: #ef4444; }
+    .preset-btns { display: flex; gap: 10px; }
+  </style>
+</head>
+<body>
+  <h2>SIH Admin Panel</h2>
+  
+  <h3>1. Update Countdown Duration</h3>
+  <input type="number" id="hours" placeholder="Enter hours from now (e.g. 12)">
+  <button onclick="setTimer()">Update Timer Across Screens</button>
+
+  <h3>2. Push Image / GIF Notification</h3>
+  <input type="text" id="img-url" placeholder="Paste Image / GIF Web URL...">
+  <button onclick="pushImage()">Push Image to Screens</button>
+  
+  <div class="preset-btns">
+    <button style="background: #8b5cf6;" onclick="pushPreset('https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHp1ZHdyOHVxb3pjdWZzYnhvZ3c1ZWZ4bWR1dnpicHZwNW8xbXJhZSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l1Kdc025K3e4lG3kY/giphy.gif')">🍱 Lunch</button>
+    <button style="background: #f59e0b;" onclick="pushPreset('https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExdW93NHBicW9sODFnOGszNW83YXAxdnEwaWdydnFnajVsMmswZnB1dCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/26uf3jB31SjEH4R16/giphy.gif')">☕ Tea Break</button>
+  </div>
+
+  <button class="btn-clear" style="margin-top: 15px;" onclick="clearImage()">❌ Clear Notification (Full Timer)</button>
+
+  <script>
+    // MUST MATCH CHANNEL_NAME FROM INDEX.HTML EXACTLY
+    const CHANNEL_NAME = "sih2026_hall_display_channel_98765";
+
+    function sendCommand(payload) {
+      fetch(`https://ntfy.sh/${CHANNEL_NAME}`, {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      })
+      .then(() => alert("Command Sent!"))
+      .catch(err => alert("Error sending command: " + err));
+    }
+
+    function setTimer() {
+      const hrs = parseFloat(document.getElementById('hours').value) || 0;
+      if (hrs <= 0) return alert("Please enter a valid number of hours!");
+      const targetTime = Date.now() + (hrs * 60 * 60 * 1000);
+      sendCommand({ targetTime: targetTime });
+    }
+
+    function pushImage() {
+      const url = document.getElementById('img-url').value.trim();
+      if (!url) return alert("Please paste an Image URL!");
+      sendCommand({ activeImage: url });
+    }
+
+    function pushPreset(url) {
+      sendCommand({ activeImage: url });
+    }
+
+    function clearImage() {
+      document.getElementById('img-url').value = "";
+      sendCommand({ activeImage: "" });
+    }
+  </script>
+</body>
+</html>
