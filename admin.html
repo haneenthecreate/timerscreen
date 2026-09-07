@@ -7,36 +7,49 @@
   <style>
     body { font-family: system-ui, -apple-system, sans-serif; padding: 20px; background: #111827; color: white; max-width: 500px; margin: 0 auto; }
     h2 { border-bottom: 2px solid #374151; padding-bottom: 10px; margin-bottom: 20px; }
-    h3 { margin-top: 20px; color: #9ca3af; font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; }
+    h3 { margin-top: 20px; color: #9ca3af; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; }
     input, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; font-size: 1rem; border: 1px solid #374151; box-sizing: border-box; }
     input { background: #1f2937; color: white; }
-    button { background: #10b981; color: white; border: none; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+    button { background: #10b981; color: white; border: none; font-weight: bold; cursor: pointer; transition: transform 0.1s; }
     button:active { transform: scale(0.98); }
-    .btn-clear { background: #ef4444; }
-    .preset-btns { display: flex; gap: 10px; }
+    .btn-clear { background: #ef4444; margin-top: 15px; }
+    .preset-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .quick-time-btns { display: flex; gap: 10px; margin-top: 5px; }
+    .quick-time-btns button { background: #374151; font-size: 0.85rem; padding: 8px; }
   </style>
 </head>
 <body>
   <h2>SIH Admin Panel</h2>
   
-  <h3>1. Update Countdown Duration</h3>
-  <input type="number" id="hours" placeholder="Enter hours from now (e.g. 12)">
-  <button onclick="setTimer()">Update Timer Across Screens</button>
+  <h3>1. Target End Time (Fixed Countdown)</h3>
+  <input type="datetime-local" id="end-datetime">
+  
+  <div class="quick-time-btns">
+    <button onclick="set10AM(false)">Set to 10:00 AM Today</button>
+    <button onclick="set10AM(true)">Set to 10:00 AM Tomorrow</button>
+  </div>
+  <button onclick="publishTargetTime()" style="background: #2563eb; margin-top: 10px;">Update Target Time Across Screens</button>
 
-  <h3>2. Push Image / GIF Notification</h3>
-  <input type="text" id="img-url" placeholder="Paste Image / GIF Web URL...">
-  <button onclick="pushImage()">Push Image to Screens</button>
+  <h3>2. Push Image / Notification Banner</h3>
+  <input type="text" id="img-url" placeholder="Paste direct Image or GIF URL...">
+  <button onclick="pushImage()">Push Image Banner</button>
   
   <div class="preset-btns">
-    <button style="background: #8b5cf6;" onclick="pushPreset('https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHp1ZHdyOHVxb3pjdWZzYnhvZ3c1ZWZ4bWR1dnpicHZwNW8xbXJhZSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l1Kdc025K3e4lG3kY/giphy.gif')">🍱 Lunch</button>
-    <button style="background: #f59e0b;" onclick="pushPreset('https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExdW93NHBicW9sODFnOGszNW83YXAxdnEwaWdydnFnajVsMmswZnB1dCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/26uf3jB31SjEH4R16/giphy.gif')">☕ Tea Break</button>
+    <button style="background: #8b5cf6;" onclick="pushPreset('https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=1000&q=80')">🍱 Lunch Break</button>
+    <button style="background: #f59e0b;" onclick="pushPreset('https://images.unsplash.com/photo-1517256064527-09c73fc73e38?auto=format&fit=crop&w=1000&q=80')">☕ Tea / Snacks</button>
+    <button style="background: #06b6d4;" onclick="pushPreset('https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&w=1000&q=80')">📊 Mentoring Round</button>
+    <button style="background: #ec4899;" onclick="pushPreset('https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1000&q=80')">🏁 Submissions Open</button>
   </div>
 
-  <button class="btn-clear" style="margin-top: 15px;" onclick="clearImage()">❌ Clear Notification (Full Timer)</button>
+  <button class="btn-clear" onclick="clearImage()">❌ Clear Notification (Return to Full Clock)</button>
 
   <script>
-    // MUST MATCH CHANNEL_NAME FROM INDEX.HTML EXACTLY
     const CHANNEL_NAME = "sih2026_hall_display_channel_98765";
+
+    // Pre-fill datetime picker with tomorrow 10:00 AM by default
+    window.onload = () => {
+      set10AM(true);
+    };
 
     function sendCommand(payload) {
       fetch(`https://ntfy.sh/${CHANNEL_NAME}`, {
@@ -47,10 +60,20 @@
       .catch(err => alert("Error sending command: " + err));
     }
 
-    function setTimer() {
-      const hrs = parseFloat(document.getElementById('hours').value) || 0;
-      if (hrs <= 0) return alert("Please enter a valid number of hours!");
-      const targetTime = Date.now() + (hrs * 60 * 60 * 1000);
+    function set10AM(isTomorrow) {
+      const d = new Date();
+      if (isTomorrow) d.setDate(d.getDate() + 1);
+      d.setHours(10, 0, 0, 0);
+      
+      // Format as YYYY-MM-THH:mm for datetime-local input
+      const isoStr = new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+      document.getElementById('end-datetime').value = isoStr;
+    }
+
+    function publishTargetTime() {
+      const val = document.getElementById('end-datetime').value;
+      if (!val) return alert("Please select a target date and time!");
+      const targetTime = new Date(val).getTime();
       sendCommand({ targetTime: targetTime });
     }
 
