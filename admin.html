@@ -5,48 +5,70 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SIH Admin Controller</title>
   <style>
-    body { font-family: system-ui, -apple-system, sans-serif; padding: 20px; background: #111827; color: white; max-width: 500px; margin: 0 auto; }
+    body { font-family: system-ui, -apple-system, sans-serif; padding: 20px; background: #111827; color: white; max-width: 550px; margin: 0 auto; }
     h2 { border-bottom: 2px solid #374151; padding-bottom: 10px; margin-bottom: 20px; }
-    h3 { margin-top: 20px; color: #9ca3af; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; }
-    input, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; font-size: 1rem; border: 1px solid #374151; box-sizing: border-box; }
+    h3 { margin-top: 25px; color: #9ca3af; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; }
+    input, button { width: 100%; padding: 12px; margin: 6px 0; border-radius: 8px; font-size: 0.95rem; border: 1px solid #374151; box-sizing: border-box; }
     input { background: #1f2937; color: white; }
     button { background: #10b981; color: white; border: none; font-weight: bold; cursor: pointer; transition: transform 0.1s; }
     button:active { transform: scale(0.98); }
-    .btn-clear { background: #ef4444; margin-top: 15px; }
-    .preset-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .quick-time-btns { display: flex; gap: 10px; margin-top: 5px; }
-    .quick-time-btns button { background: #374151; font-size: 0.85rem; padding: 8px; }
+    .btn-session { background: #2563eb; }
+    .btn-timer { background: #059669; }
+    .btn-clear { background: #ef4444; margin-top: 20px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .card { background: #1f2937; padding: 15px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #374151; }
   </style>
 </head>
 <body>
-  <h2>SIH Admin Panel</h2>
-  
-  <h3>1. Target End Time (Fixed Countdown)</h3>
-  <input type="datetime-local" id="end-datetime">
-  
-  <div class="quick-time-btns">
-    <button onclick="set10AM(false)">Set to 10:00 AM Today</button>
-    <button onclick="set10AM(true)">Set to 10:00 AM Tomorrow</button>
-  </div>
-  <button onclick="publishTargetTime()" style="background: #2563eb; margin-top: 10px;">Update Target Time Across Screens</button>
+  <h2>SIH Admin Control Panel</h2>
 
-  <h3>2. Push Image / Notification Banner</h3>
-  <input type="text" id="img-url" placeholder="Paste direct Image or GIF URL...">
-  <button onclick="pushImage()">Push Image Banner</button>
-  
-  <div class="preset-btns">
-    <button style="background: #8b5cf6;" onclick="pushPreset('https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=1000&q=80')">🍱 Lunch Break</button>
-    <button style="background: #f59e0b;" onclick="pushPreset('https://images.unsplash.com/photo-1517256064527-09c73fc73e38?auto=format&fit=crop&w=1000&q=80')">☕ Tea / Snacks</button>
-    <button style="background: #06b6d4;" onclick="pushPreset('https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&w=1000&q=80')">📊 Mentoring Round</button>
-    <button style="background: #ec4899;" onclick="pushPreset('https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1000&q=80')">🏁 Submissions Open</button>
+  <!-- SECTION 1: SESSION MODE (NO COUNTDOWN) -->
+  <div class="card">
+    <h3 style="margin-top:0; color:#60a5fa;">1. Session Mode (No Countdown)</h3>
+    <input type="text" id="session-badge" placeholder="Badge Tag (e.g., LIVE SESSION, REGISTRATION)">
+    <input type="text" id="session-title" placeholder="Main Title (e.g., INAUGURATION CEREMONY)">
+    <input type="text" id="session-sub" placeholder="Subtitle / Venue (e.g., Main Auditorium | 09:30 AM)">
+    
+    <button class="btn-session" onclick="publishSession()">📢 Activate Session Screen</button>
+
+    <h3>Quick Session Presets</h3>
+    <div class="grid-2">
+      <button style="background: #3b82f6;" onclick="pushSessionPreset('REGISTRATION', 'PARTICIPANT REGISTRATION', 'Please queue up at the registration desk with your ID')">📝 Registration</button>
+      <button style="background: #8b5cf6;" onclick="pushSessionPreset('INAUGURATION', 'INAUGURATION CEREMONY', 'Welcome Address & Keynote | Main Auditorium')">🎗️ Inauguration</button>
+      <button style="background: #ec4899;" onclick="pushSessionPreset('EVALUATION', 'MENTORING ROUND 1', 'Mentors are visiting team tables')">📊 Mentoring</button>
+      <button style="background: #f59e0b;" onclick="pushSessionPreset('VALEDICTORY', 'VALEDICTORY & AWARDS', 'Closing Ceremony & Winner Announcement')">🏆 Valedictory</button>
+    </div>
   </div>
 
-  <button class="btn-clear" onclick="clearImage()">❌ Clear Notification (Return to Full Clock)</button>
+  <!-- SECTION 2: COUNTDOWN TIMER MODE -->
+  <div class="card">
+    <h3 style="margin-top:0; color:#34d399;">2. Countdown Timer Mode</h3>
+    <input type="datetime-local" id="end-datetime">
+    <div class="grid-2" style="margin-top: 5px;">
+      <button style="background: #374151;" onclick="set10AM(false)">10:00 AM Today</button>
+      <button style="background: #374151;" onclick="set10AM(true)">10:00 AM Tomorrow</button>
+    </div>
+    <button class="btn-timer" style="margin-top: 10px;" onclick="publishTimer()">⏱️ Switch to Countdown Mode</button>
+  </div>
+
+  <!-- SECTION 3: IMAGE NOTIFICATION BANNER -->
+  <div class="card">
+    <h3 style="margin-top:0; color:#f0abfc;">3. Image / Banner Notification Overlay</h3>
+    <input type="text" id="img-url" placeholder="Paste direct Image or GIF URL...">
+    <button style="background: #d946ef;" onclick="pushImage()">Push Image Overlay</button>
+    
+    <div class="grid-2">
+      <button style="background: #6366f1;" onclick="pushImage('https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=1000&q=80')">🍱 Lunch Break</button>
+      <button style="background: #ea580c;" onclick="pushImage('https://images.unsplash.com/photo-1517256064527-09c73fc73e38?auto=format&fit=crop&w=1000&q=80')">☕ Tea Break</button>
+    </div>
+    <button style="background: #4b5563; margin-top: 8px;" onclick="clearImage()">Hide Image Overlay</button>
+  </div>
+
+  <button class="btn-clear" onclick="resetToDefault()">🔄 Reset to Default Countdown</button>
 
   <script>
     const CHANNEL_NAME = "sih2026_hall_display_channel_98765";
 
-    // Pre-fill datetime picker with tomorrow 10:00 AM by default
     window.onload = () => {
       set10AM(true);
     };
@@ -56,40 +78,74 @@
         method: 'POST',
         body: JSON.stringify(payload)
       })
-      .then(() => alert("Command Sent!"))
-      .catch(err => alert("Error sending command: " + err));
+      .then(() => alert("Command Published to Screens!"))
+      .catch(err => alert("Error: " + err));
     }
 
     function set10AM(isTomorrow) {
       const d = new Date();
       if (isTomorrow) d.setDate(d.getDate() + 1);
       d.setHours(10, 0, 0, 0);
-      
-      // Format as YYYY-MM-THH:mm for datetime-local input
       const isoStr = new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
       document.getElementById('end-datetime').value = isoStr;
     }
 
-    function publishTargetTime() {
+    // 1. Activate Custom Session
+    function publishSession() {
+      const badge = document.getElementById('session-badge').value.trim();
+      const title = document.getElementById('session-title').value.trim();
+      const sub = document.getElementById('session-sub').value.trim();
+      if (!title) return alert("Please enter a Session Title!");
+
+      sendCommand({
+        mode: 'session',
+        sessionBadge: badge || 'EVENT IN PROGRESS',
+        sessionTitle: title,
+        sessionSubtitle: sub
+      });
+    }
+
+    // Quick Session Presets
+    function pushSessionPreset(badge, title, sub) {
+      document.getElementById('session-badge').value = badge;
+      document.getElementById('session-title').value = title;
+      document.getElementById('session-sub').value = sub;
+      sendCommand({
+        mode: 'session',
+        sessionBadge: badge,
+        sessionTitle: title,
+        sessionSubtitle: sub
+      });
+    }
+
+    // 2. Activate Timer Mode
+    function publishTimer() {
       const val = document.getElementById('end-datetime').value;
       if (!val) return alert("Please select a target date and time!");
-      const targetTime = new Date(val).getTime();
-      sendCommand({ targetTime: targetTime });
+      sendCommand({
+        mode: 'timer',
+        targetTime: new Date(val).getTime()
+      });
     }
 
-    function pushImage() {
-      const url = document.getElementById('img-url').value.trim();
+    // 3. Push Image Overlay
+    function pushImage(presetUrl) {
+      const url = presetUrl || document.getElementById('img-url').value.trim();
       if (!url) return alert("Please paste an Image URL!");
-      sendCommand({ activeImage: url });
-    }
-
-    function pushPreset(url) {
       sendCommand({ activeImage: url });
     }
 
     function clearImage() {
       document.getElementById('img-url').value = "";
       sendCommand({ activeImage: "" });
+    }
+
+    function resetToDefault() {
+      sendCommand({
+        mode: 'timer',
+        activeImage: "",
+        targetTime: new Date().getTime() + (24 * 60 * 60 * 1000)
+      });
     }
   </script>
 </body>
