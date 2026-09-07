@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIH Hall Display</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: #0d1117;
+      color: #ffffff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      padding: 15px 30px;
+      background: #161b22;
+      font-size: 1.5rem;
+      border-bottom: 2px solid #30363d;
+    }
+
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      padding: 20px;
+    }
+
+    .timer-box { text-align: center; transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+    .timer-label { font-size: 2rem; color: #8b949e; text-transform: uppercase; letter-spacing: 2px; }
+    .timer-display { font-size: 9rem; font-weight: 800; color: #3fb950; font-family: monospace; }
+
+    .image-box {
+      width: 100%;
+      height: 0;
+      opacity: 0;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .image-box img {
+      max-width: 90%;
+      max-height: 55vh;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    /* Active Notification Layout Adjustments */
+    body.has-notification .main-content { justify-content: flex-start; }
+    body.has-notification .timer-label { font-size: 1rem; }
+    body.has-notification .timer-display { font-size: 3.5rem; color: #d29922; }
+    body.has-notification .image-box { height: 65vh; opacity: 1; margin-top: 10px; }
+  </style>
+</head>
+<body>
+
+  <div class="header-bar">
+    <span><b>SIH 2026</b> | HACKATHON HALL</span>
+    <span id="actual-time">00:00:00 AM</span>
+  </div>
+
+  <div class="main-content">
+    <div class="timer-box">
+      <div class="timer-label" id="timer-status">Hacking Ends In</div>
+      <div class="timer-display" id="countdown">00:00:00</div>
+    </div>
+
+    <div class="image-box" id="image-box">
+      <img id="feed-image" src="" alt="Notification">
+    </div>
+  </div>
+
+  <script>
+    // UNIQUE CHANNEL NAME (Keep this identical in both files)
+    const CHANNEL_NAME = "sih2026_hall_display_channel_98765";
+
+    let targetTimestamp = localStorage.getItem('sih_target_time') 
+      ? parseInt(localStorage.getItem('sih_target_time')) 
+      : Date.now() + (24 * 60 * 60 * 1000);
+
+    // 1. Live Clock
+    setInterval(() => {
+      document.getElementById('actual-time').innerText = new Date().toLocaleTimeString();
+    }, 1000);
+
+    // 2. Countdown Timer Logic
+    setInterval(() => {
+      const diff = Math.max(0, targetTimestamp - Date.now());
+      const hrs = String(Math.floor(diff / 3600000)).padStart(2, '0');
+      const mins = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
+      const secs = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
+      document.getElementById('countdown').innerText = `${hrs}:${mins}:${secs}`;
+    }, 1000);
+
+    // 3. Real-time Cloud Listener
+    const eventSource = new EventSource(`https://ntfy.sh/${CHANNEL_NAME}/json`);
+    
+    eventSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        const payload = JSON.parse(data.message);
+
+        if (payload.targetTime) {
+          targetTimestamp = payload.targetTime;
+          localStorage.setItem('sih_target_time', targetTimestamp);
+        }
+
+        if (payload.activeImage && payload.activeImage !== "") {
+          document.getElementById('feed-image').src = payload.activeImage;
+          document.body.classList.add('has-notification');
+        } else if (payload.activeImage === "") {
+          document.body.classList.remove('has-notification');
+        }
+      } catch(e) {}
+    };
+  </script>
+</body>
+</html>
