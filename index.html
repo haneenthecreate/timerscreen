@@ -81,7 +81,7 @@
     </div>
   </div>
 
-  <script>
+ <script>
     // UNIQUE CHANNEL NAME (Keep this identical in both files)
     const CHANNEL_NAME = "sih2026_hall_display_channel_98765";
 
@@ -103,12 +103,16 @@
       document.getElementById('countdown').innerText = `${hrs}:${mins}:${secs}`;
     }, 1000);
 
-    // 3. Real-time Cloud Listener
-    const eventSource = new EventSource(`https://ntfy.sh/${CHANNEL_NAME}/json`);
+    // 3. Real-time Cloud Listener (Fixed /sse endpoint)
+    const eventSource = new EventSource(`https://ntfy.sh/${CHANNEL_NAME}/sse`);
     
     eventSource.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
+        
+        // Only process actual messages (ignore 'open' or 'keepalive' server pings)
+        if (data.event !== "message") return;
+
         const payload = JSON.parse(data.message);
 
         if (payload.targetTime) {
@@ -122,7 +126,9 @@
         } else if (payload.activeImage === "") {
           document.body.classList.remove('has-notification');
         }
-      } catch(e) {}
+      } catch(e) {
+        console.error("Parsing error:", e);
+      }
     };
   </script>
 </body>
