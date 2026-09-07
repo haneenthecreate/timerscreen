@@ -54,6 +54,7 @@
       max-height: 55vh;
       border-radius: 12px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      object-fit: contain;
     }
 
     /* Active Notification Layout Adjustments */
@@ -77,24 +78,34 @@
     </div>
 
     <div class="image-box" id="image-box">
-      <img id="feed-image" src="" alt="Notification">
+      <img id="feed-image" src="" alt="Notification Banner">
     </div>
   </div>
 
- <script>
-    // UNIQUE CHANNEL NAME (Keep this identical in both files)
+  <script>
     const CHANNEL_NAME = "sih2026_hall_display_channel_98765";
 
+    // Helper: Calculate default 10:00 AM target time
+    function getDefault10AM() {
+      const target = new Date();
+      target.setHours(10, 0, 0, 0);
+      if (Date.now() > target.getTime()) {
+        target.setDate(target.getDate() + 1); // Target 10 AM tomorrow if 10 AM today passed
+      }
+      return target.getTime();
+    }
+
+    // Load stored target time or default to 10:00 AM
     let targetTimestamp = localStorage.getItem('sih_target_time') 
       ? parseInt(localStorage.getItem('sih_target_time')) 
-      : Date.now() + (24 * 60 * 60 * 1000);
+      : getDefault10AM();
 
-    // 1. Live Clock
+    // 1. Live Clock Display
     setInterval(() => {
       document.getElementById('actual-time').innerText = new Date().toLocaleTimeString();
     }, 1000);
 
-    // 2. Countdown Timer Logic
+    // 2. Precise Countdown Logic
     setInterval(() => {
       const diff = Math.max(0, targetTimestamp - Date.now());
       const hrs = String(Math.floor(diff / 3600000)).padStart(2, '0');
@@ -103,23 +114,23 @@
       document.getElementById('countdown').innerText = `${hrs}:${mins}:${secs}`;
     }, 1000);
 
-    // 3. Real-time Cloud Listener (Fixed /sse endpoint)
+    // 3. Real-time Cloud SSE Listener
     const eventSource = new EventSource(`https://ntfy.sh/${CHANNEL_NAME}/sse`);
     
     eventSource.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        
-        // Only process actual messages (ignore 'open' or 'keepalive' server pings)
         if (data.event !== "message") return;
 
         const payload = JSON.parse(data.message);
 
+        // Update Target End Time
         if (payload.targetTime) {
           targetTimestamp = payload.targetTime;
           localStorage.setItem('sih_target_time', targetTimestamp);
         }
 
+        // Handle Image / Notification Push
         if (payload.activeImage && payload.activeImage !== "") {
           document.getElementById('feed-image').src = payload.activeImage;
           document.body.classList.add('has-notification');
@@ -127,7 +138,7 @@
           document.body.classList.remove('has-notification');
         }
       } catch(e) {
-        console.error("Parsing error:", e);
+        console.error("Error parsing message payload:", e);
       }
     };
   </script>
