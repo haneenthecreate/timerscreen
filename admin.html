@@ -3,82 +3,104 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SIH Admin Controller</title>
+  <title>SIH 2026 Admin Panel</title>
   <style>
-    body { font-family: system-ui, -apple-system, sans-serif; padding: 20px; background: #111827; color: white; max-width: 550px; margin: 0 auto; }
-    h2 { border-bottom: 2px solid #374151; padding-bottom: 10px; margin-bottom: 20px; }
-    h3 { margin-top: 25px; color: #9ca3af; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; }
-    input, button { width: 100%; padding: 12px; margin: 6px 0; border-radius: 8px; font-size: 0.95rem; border: 1px solid #374151; box-sizing: border-box; }
-    input { background: #1f2937; color: white; }
-    button { background: #10b981; color: white; border: none; font-weight: bold; cursor: pointer; transition: transform 0.1s; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      padding: 20px;
+      background: #0d1117;
+      color: #c9d1d9;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    h2 { border-bottom: 2px solid #30363d; padding-bottom: 10px; margin-bottom: 20px; color: #58a6ff; }
+    h3 { margin-top: 15px; color: #8b949e; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; }
+    input, button { width: 100%; padding: 12px; margin: 6px 0; border-radius: 8px; font-size: 0.95rem; border: 1px solid #30363d; box-sizing: border-box; }
+    input { background: #161b22; color: white; }
+    button { background: #238636; color: white; border: none; font-weight: bold; cursor: pointer; transition: transform 0.1s, opacity 0.2s; }
     button:active { transform: scale(0.98); }
-    .btn-session { background: #2563eb; }
-    .btn-timer { background: #059669; }
-    .btn-clear { background: #ef4444; margin-top: 20px; }
+    button:hover { opacity: 0.9; }
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .card { background: #1f2937; padding: 15px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #374151; }
+    .card { background: #161b22; padding: 16px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #30363d; }
+    .btn-art { background: linear-gradient(135deg, #a371f7, #58a6ff); }
+    .btn-banner { background: #d946ef; }
+    .btn-clear { background: #da3633; margin-top: 15px; }
   </style>
 </head>
 <body>
-  <h2>SIH Admin Control Panel</h2>
+  <h2>SIH 2026 Hall Admin Controller</h2>
 
-  <!-- SECTION 1: SESSION MODE (NO COUNTDOWN) -->
+  <!-- SECTION 1: START SLIDE ART SHOWCASE -->
+  <div class="card" style="border-color: #a371f7;">
+    <h3 style="margin-top:0; color:#a371f7;">🎨 1. Slide Art Branding Showcase Mode</h3>
+    <p style="font-size: 0.85rem; color: #8b949e; margin-bottom: 10px;">
+      Launches animated looping slides featuring SIH 2026 branding, IEDC NCERC logos, and hackathon quotes. Hides timer until switched back.
+    </p>
+    <button class="btn-art" onclick="startSlideArt()">✨ Launch Slide Art Showcase Mode</button>
+  </div>
+
+  <!-- SECTION 2: FULLSCREEN BANNER PUBLISH -->
+  <div class="card" style="border-color: #d946ef;">
+    <h3 style="margin-top:0; color:#f0abfc;">🖼️ 2. Fullscreen Banner Publish (Hides Clock)</h3>
+    <input type="text" id="fullscreen-url" placeholder="Paste direct full-screen Image / GIF URL...">
+    <button class="btn-banner" onclick="publishFullscreenBanner()">📺 Publish Fullscreen Banner</button>
+    <button style="background: #4b5563; margin-top: 5px;" onclick="clearFullscreenBanner()">Exit Fullscreen Banner</button>
+  </div>
+
+  <!-- SECTION 3: SESSION MODE -->
   <div class="card">
-    <h3 style="margin-top:0; color:#60a5fa;">1. Session Mode (No Countdown)</h3>
-    <input type="text" id="session-badge" placeholder="Badge Tag (e.g., LIVE SESSION, REGISTRATION)">
+    <h3 style="margin-top:0; color:#60a5fa;">📢 3. Session Mode (No Countdown)</h3>
+    <input type="text" id="session-badge" placeholder="Badge Tag (e.g., REGISTRATION, INAUGURATION)">
     <input type="text" id="session-title" placeholder="Main Title (e.g., INAUGURATION CEREMONY)">
-    <input type="text" id="session-sub" placeholder="Subtitle / Venue (e.g., Main Auditorium | 09:30 AM)">
+    <input type="text" id="session-sub" placeholder="Subtitle / Venue (e.g., Main Auditorium | NCERC)">
     
-    <button class="btn-session" onclick="publishSession()">📢 Activate Session Screen</button>
+    <button style="background: #2563eb;" onclick="publishSession()">Activate Session Screen</button>
 
     <h3>Quick Session Presets</h3>
     <div class="grid-2">
-      <button style="background: #3b82f6;" onclick="pushSessionPreset('REGISTRATION', 'PARTICIPANT REGISTRATION', 'Please queue up at the registration desk with your ID')">📝 Registration</button>
-      <button style="background: #8b5cf6;" onclick="pushSessionPreset('INAUGURATION', 'INAUGURATION CEREMONY', 'Welcome Address & Keynote | Main Auditorium')">🎗️ Inauguration</button>
+      <button style="background: #3b82f6;" onclick="pushSessionPreset('REGISTRATION', 'PARTICIPANT REGISTRATION', 'Please queue at the registration counter with your college ID')">📝 Registration</button>
+      <button style="background: #8b5cf6;" onclick="pushSessionPreset('INAUGURATION', 'INAUGURATION CEREMONY', 'Welcome Address & Keynote • Main Auditorium')">🎗️ Inauguration</button>
       <button style="background: #ec4899;" onclick="pushSessionPreset('EVALUATION', 'MENTORING ROUND 1', 'Mentors are visiting team tables')">📊 Mentoring</button>
       <button style="background: #f59e0b;" onclick="pushSessionPreset('VALEDICTORY', 'VALEDICTORY & AWARDS', 'Closing Ceremony & Winner Announcement')">🏆 Valedictory</button>
     </div>
   </div>
 
-  <!-- SECTION 2: COUNTDOWN TIMER MODE -->
+  <!-- SECTION 4: COUNTDOWN TIMER MODE -->
   <div class="card">
-    <h3 style="margin-top:0; color:#34d399;">2. Countdown Timer Mode</h3>
+    <h3 style="margin-top:0; color:#34d399;">⏱️ 4. Countdown Timer Mode</h3>
     <input type="datetime-local" id="end-datetime">
     <div class="grid-2" style="margin-top: 5px;">
       <button style="background: #374151;" onclick="set10AM(false)">10:00 AM Today</button>
       <button style="background: #374151;" onclick="set10AM(true)">10:00 AM Tomorrow</button>
     </div>
-    <button class="btn-timer" style="margin-top: 10px;" onclick="publishTimer()">⏱️ Switch to Countdown Mode</button>
+    <button style="background: #059669; margin-top: 10px;" onclick="publishTimer()">Return to Countdown Mode</button>
   </div>
 
-  <!-- SECTION 3: IMAGE NOTIFICATION BANNER -->
+  <!-- SECTION 5: IMAGE OVERLAY (For Timer/Session Mode) -->
   <div class="card">
-    <h3 style="margin-top:0; color:#f0abfc;">3. Image / Banner Notification Overlay</h3>
-    <input type="text" id="img-url" placeholder="Paste direct Image or GIF URL...">
-    <button style="background: #d946ef;" onclick="pushImage()">Push Image Overlay</button>
-    
+    <h3 style="margin-top:0; color:#eab308;">🍱 5. Overlay Banner (Timer / Session Mode)</h3>
+    <input type="text" id="img-url" placeholder="Paste Overlay Banner Image URL...">
+    <button style="background: #d97706;" onclick="pushOverlayImage()">Push Banner Overlay</button>
     <div class="grid-2">
-      <button style="background: #6366f1;" onclick="pushImage('https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=1000&q=80')">🍱 Lunch Break</button>
-      <button style="background: #ea580c;" onclick="pushImage('https://images.unsplash.com/photo-1517256064527-09c73fc73e38?auto=format&fit=crop&w=1000&q=80')">☕ Tea Break</button>
+      <button style="background: #6366f1;" onclick="pushOverlayImage('https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=1000&q=80')">🍱 Lunch Break</button>
+      <button style="background: #ea580c;" onclick="pushOverlayImage('https://images.unsplash.com/photo-1517256064527-09c73fc73e38?auto=format&fit=crop&w=1000&q=80')">☕ Tea Break</button>
     </div>
-    <button style="background: #4b5563; margin-top: 8px;" onclick="clearImage()">Hide Image Overlay</button>
+    <button style="background: #4b5563; margin-top: 8px;" onclick="clearOverlayImage()">Hide Overlay Banner</button>
   </div>
 
-  <button class="btn-clear" onclick="resetToDefault()">🔄 Reset to Default Countdown</button>
+  <button class="btn-clear" onclick="resetToTimer()">🔄 Reset to Default Countdown Mode</button>
 
   <script>
     const CHANNEL_NAME = "sih2026_hall_display_channel_98765";
 
-    window.onload = () => {
-      set10AM(true);
-    };
+    window.onload = () => { set10AM(true); };
 
     function sendCommand(payload) {
       fetch(`https://ntfy.sh/${CHANNEL_NAME}`, {
         method: 'POST',
         body: JSON.stringify(payload)
       })
-      .then(() => alert("Command Published to Screens!"))
+      .then(() => alert("Command Published Successfully!"))
       .catch(err => alert("Error: " + err));
     }
 
@@ -90,7 +112,22 @@
       document.getElementById('end-datetime').value = isoStr;
     }
 
-    // 1. Activate Custom Session
+    // 1. Slide Art Showcase
+    function startSlideArt() {
+      sendCommand({ mode: 'slide-art' });
+    }
+
+    // 2. Fullscreen Banner
+    function publishFullscreenBanner() {
+      const url = document.getElementById('fullscreen-url').value.trim();
+      if (!url) return alert("Please enter an Image URL for Fullscreen Banner!");
+      sendCommand({ mode: 'banner', fullscreenBannerUrl: url });
+    }
+    function clearFullscreenBanner() {
+      sendCommand({ mode: 'timer', fullscreenBannerUrl: '' });
+    }
+
+    // 3. Session Mode
     function publishSession() {
       const badge = document.getElementById('session-badge').value.trim();
       const title = document.getElementById('session-title').value.trim();
@@ -104,8 +141,6 @@
         sessionSubtitle: sub
       });
     }
-
-    // Quick Session Presets
     function pushSessionPreset(badge, title, sub) {
       document.getElementById('session-badge').value = badge;
       document.getElementById('session-title').value = title;
@@ -118,7 +153,7 @@
       });
     }
 
-    // 2. Activate Timer Mode
+    // 4. Countdown Timer
     function publishTimer() {
       const val = document.getElementById('end-datetime').value;
       if (!val) return alert("Please select a target date and time!");
@@ -128,24 +163,31 @@
       });
     }
 
-    // 3. Push Image Overlay
-    function pushImage(presetUrl) {
+    // 5. Overlay Image
+    function pushOverlayImage(presetUrl) {
       const url = presetUrl || document.getElementById('img-url').value.trim();
       if (!url) return alert("Please paste an Image URL!");
       sendCommand({ activeImage: url });
     }
-
-    function clearImage() {
+    function clearOverlayImage() {
       document.getElementById('img-url').value = "";
       sendCommand({ activeImage: "" });
     }
 
-    function resetToDefault() {
+    function resetToTimer() {
       sendCommand({
         mode: 'timer',
         activeImage: "",
-        targetTime: new Date().getTime() + (24 * 60 * 60 * 1000)
+        fullscreenBannerUrl: "",
+        targetTime: getDefault10AM()
       });
+    }
+
+    function getDefault10AM() {
+      const target = new Date();
+      target.setHours(10, 0, 0, 0);
+      if (Date.now() > target.getTime()) target.setDate(target.getDate() + 1);
+      return target.getTime();
     }
   </script>
 </body>
