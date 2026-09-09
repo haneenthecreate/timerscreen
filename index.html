@@ -97,21 +97,21 @@
       font-weight: 800; 
       color: #3fb950; 
       font-family: monospace; 
-      transition: color 0.4s ease, text-shadow 0.4s ease;
+      transition: color 0.3s ease, text-shadow 0.3s ease;
     }
 
-    /* Countdown Alert States */
-    .timer-display.warning-1min {
+    /* Plain Red state (20s down to 10s - No animation) */
+    .timer-display.red-alert {
       color: #f85149 !important;
-      text-shadow: 0 0 30px rgba(248, 81, 73, 0.6);
     }
 
+    /* Critical Pulsing Red state (Last 10 seconds & 3s hold at 00:00:00) */
     .timer-display.critical-10sec {
       color: #ff2a2a !important;
       animation: pulseCritical 0.8s infinite alternate ease-in-out;
     }
 
-    /* Finished Timer Alert State */
+    /* Finished Alert Title & Subheading */
     .timer-finished-title {
       font-size: 5.5rem;
       font-weight: 900;
@@ -429,7 +429,7 @@
       document.getElementById('actual-time').innerText = new Date().toLocaleTimeString();
     }, 1000);
 
-    // 5. Precise Countdown Logic, Visual Alerts & 3-Second Post-Zero Trigger
+    // 5. Precision Countdown Logic with Staged Alert States
     const countdownEl = document.getElementById('countdown');
     const timerStatusEl = document.getElementById('timer-status');
     const finishedTitleEl = document.getElementById('finished-title');
@@ -453,30 +453,33 @@
           countdownEl.innerText = `${hrs}:${mins}:${secs}`;
 
           if (diff <= 10000) {
-            countdownEl.classList.remove('warning-1min');
+            // Last 10 Seconds: Pulsing Zoom Animation
+            countdownEl.classList.remove('red-alert');
             countdownEl.classList.add('critical-10sec');
-          } else if (diff <= 60000) {
+          } else if (diff <= 20000) {
+            // 20s to 10s: Plain Red (No animations)
             countdownEl.classList.remove('critical-10sec');
-            countdownEl.classList.add('warning-1min');
+            countdownEl.classList.add('red-alert');
           } else {
-            countdownEl.classList.remove('warning-1min', 'critical-10sec');
+            // > 20s: Normal Green
+            countdownEl.classList.remove('red-alert', 'critical-10sec');
           }
         } else {
           // --- TIME EXPIRED ---
           const pastZeroMs = now - appState.targetTime;
 
           if (pastZeroMs < 3000) {
-            // Stay at 00:00:00 for 3 seconds
+            // Hold at 00:00:00 in pulsing red state for 3 seconds
             timerStatusEl.style.display = 'block';
             countdownEl.style.display = 'block';
             finishedTitleEl.style.display = 'none';
             finishedSubEl.style.display = 'none';
 
             countdownEl.innerText = '00:00:00';
-            countdownEl.classList.remove('warning-1min');
+            countdownEl.classList.remove('red-alert');
             countdownEl.classList.add('critical-10sec');
           } else {
-            // After 3 seconds, show "HANDS OFF THE KEYBOARD" and "CODING ENDS NOW"
+            // After 3 seconds: Switch to final end banners
             timerStatusEl.style.display = 'none';
             countdownEl.style.display = 'none';
             finishedTitleEl.style.display = 'block';
@@ -484,7 +487,7 @@
           }
         }
       } else {
-        countdownEl.classList.remove('warning-1min', 'critical-10sec');
+        countdownEl.classList.remove('red-alert', 'critical-10sec');
       }
     }, 1000);
 
