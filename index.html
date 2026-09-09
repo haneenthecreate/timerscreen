@@ -111,6 +111,26 @@
       animation: pulseCritical 0.8s infinite alternate ease-in-out;
     }
 
+    /* Finished Timer Alert State */
+    .timer-finished-title {
+      font-size: 5.5rem;
+      font-weight: 900;
+      color: #ff2a2a;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      line-height: 1.1;
+      margin-bottom: 15px;
+      animation: pulseCritical 0.8s infinite alternate ease-in-out;
+    }
+
+    .timer-finished-sub {
+      font-size: 3rem;
+      font-weight: 800;
+      color: #f85149;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
     @keyframes pulseCritical {
       0% {
         transform: scale(1);
@@ -279,6 +299,10 @@
     <div class="timer-box" id="timer-box">
       <div class="timer-label" id="timer-status">Hacking Ends In</div>
       <div class="timer-display" id="countdown">00:00:00</div>
+      
+      <!-- Finished Alert Title & Subheading -->
+      <div class="timer-finished-title" id="finished-title" style="display: none;">HANDS OFF THE KEYBOARD</div>
+      <div class="timer-finished-sub" id="finished-sub" style="display: none;">CODING ENDS NOW</div>
     </div>
 
     <!-- MODE 2: SESSION DISPLAY -->
@@ -405,29 +429,59 @@
       document.getElementById('actual-time').innerText = new Date().toLocaleTimeString();
     }, 1000);
 
-    // 5. Precise Countdown Logic & Visual Alerts
+    // 5. Precise Countdown Logic, Visual Alerts & 3-Second Post-Zero Trigger
     const countdownEl = document.getElementById('countdown');
+    const timerStatusEl = document.getElementById('timer-status');
+    const finishedTitleEl = document.getElementById('finished-title');
+    const finishedSubEl = document.getElementById('finished-sub');
 
     setInterval(() => {
       if (appState.mode === 'timer') {
-        const diff = Math.max(0, appState.targetTime - Date.now());
-        const hrs = String(Math.floor(diff / 3600000)).padStart(2, '0');
-        const mins = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
-        const secs = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
-        countdownEl.innerText = `${hrs}:${mins}:${secs}`;
+        const now = Date.now();
+        const diff = appState.targetTime - now;
 
-        // Visual alert triggers for last 1 minute and last 10 seconds
-        if (diff > 0 && diff <= 10000) {
-          countdownEl.classList.remove('warning-1min');
-          countdownEl.classList.add('critical-10sec');
-        } else if (diff > 10000 && diff <= 60000) {
-          countdownEl.classList.remove('critical-10sec');
-          countdownEl.classList.add('warning-1min');
-        } else if (diff === 0) {
-          countdownEl.classList.remove('warning-1min');
-          countdownEl.classList.add('critical-10sec');
+        if (diff > 0) {
+          // --- COUNTDOWN IN PROGRESS ---
+          timerStatusEl.style.display = 'block';
+          countdownEl.style.display = 'block';
+          finishedTitleEl.style.display = 'none';
+          finishedSubEl.style.display = 'none';
+
+          const hrs = String(Math.floor(diff / 3600000)).padStart(2, '0');
+          const mins = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
+          const secs = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
+          countdownEl.innerText = `${hrs}:${mins}:${secs}`;
+
+          if (diff <= 10000) {
+            countdownEl.classList.remove('warning-1min');
+            countdownEl.classList.add('critical-10sec');
+          } else if (diff <= 60000) {
+            countdownEl.classList.remove('critical-10sec');
+            countdownEl.classList.add('warning-1min');
+          } else {
+            countdownEl.classList.remove('warning-1min', 'critical-10sec');
+          }
         } else {
-          countdownEl.classList.remove('warning-1min', 'critical-10sec');
+          // --- TIME EXPIRED ---
+          const pastZeroMs = now - appState.targetTime;
+
+          if (pastZeroMs < 3000) {
+            // Stay at 00:00:00 for 3 seconds
+            timerStatusEl.style.display = 'block';
+            countdownEl.style.display = 'block';
+            finishedTitleEl.style.display = 'none';
+            finishedSubEl.style.display = 'none';
+
+            countdownEl.innerText = '00:00:00';
+            countdownEl.classList.remove('warning-1min');
+            countdownEl.classList.add('critical-10sec');
+          } else {
+            // After 3 seconds, show "HANDS OFF THE KEYBOARD" and "CODING ENDS NOW"
+            timerStatusEl.style.display = 'none';
+            countdownEl.style.display = 'none';
+            finishedTitleEl.style.display = 'block';
+            finishedSubEl.style.display = 'block';
+          }
         }
       } else {
         countdownEl.classList.remove('warning-1min', 'critical-10sec');
